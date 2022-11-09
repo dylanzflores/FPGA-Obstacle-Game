@@ -1,4 +1,3 @@
-// Mesa
 module Final_Project(input logic CLOCK_50, SW[1:0], KEY[0],
 							output logic       VGA_CLK, 
 							output logic       VGA_HS,
