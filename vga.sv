@@ -64,7 +64,7 @@ module videoGen(input logic [9:0] x, y, clk, distance,
   sqGen ground(x, y, 10'd20, 10'd400, 10'd700, 10'd500, gnd); // level for player
   // left, top, right, bot
   // Display shapes
-  always @(posedge clk) begin		
+  always_ff @(posedge clk) begin		
 	/*if(player_right_loc == 10'd620 - counter_black) begin
 		//dead <= 1;
 	end
@@ -85,11 +85,12 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 		r_green = 8'h00;
 		r_blue = 8'h00;
 	 end
-	 if(!player) begin // background
+	 else if(!player) begin // background
 		r_red = 8'h72;
 		r_green = 8'h09;
 		r_blue = 8'hAA;
 	 end
+	 
 	 // Moving background obstacle appears as a challenge
 	if(mb1) begin
 		r_red = 8'h0A;
@@ -97,22 +98,22 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 		r_blue = 8'h81;
 	end
 	
-	 if(obs[0]) begin // obstacle 1
+	else if(obs[0]) begin // obstacle 1
 		r_red = 8'h00;
 		r_green = 8'h00;
 		r_blue = 8'h00;
 	 end
-	 if(obs[1]) begin // obstacle 2
+	 else if(obs[1]) begin // obstacle 2
 		r_red = 8'hFF;
 		r_green = 8'hFF;
 		r_blue = 8'hFF;
 	 end
-	 if(obs[2]) begin
+	 else if(obs[2]) begin
 		r_red = 8'h0A;
 		r_green = 8'h13;
 		r_blue = 8'h81;
 	end
-	 if(gnd) begin
+	 else if(gnd) begin
 		r_red = 8'h00;
 		r_green = 8'h00;
 		r_blue = 8'h00;
