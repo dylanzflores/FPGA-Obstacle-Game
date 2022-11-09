@@ -90,6 +90,11 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 		r_green = 8'h09;
 		r_blue = 8'hAA;
 	 end
+	  else begin // float values of red, green, blue
+		r_red = 8'hzz;
+		r_green = 8'hzz;
+		r_blue = 8'hzz;
+	 end
 	 
 	 // Moving background obstacle appears as a challenge
 	if(mb1) begin
