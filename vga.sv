@@ -26,25 +26,32 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 					 output logic [7:0] r, g, b,
 					 output logic win, dead); 
 
-  logic obs[10:0], player, gnd, mb1; 						//Top Left Top Edge  Top Right Bottom Edge
+  logic obs[10:0], player, gnd, mb1; 						//Top Left Top Edge  Top Right Bottom Edg
   logic [9:0] player_right_loc, player_bottom_loc;
   logic [7:0] r_red, r_blue, r_green;
   assign player_right_loc = 10'd250;
   assign player_bottom_loc = 10'd400 - distance;
    sqGen mainSq(x, y, 10'd220, 10'd360 - distance, player_right_loc, player_bottom_loc, player); // main player square character
-   logic [9:0] counter_black = 0;
-	logic [10:0] game_time = 0;
+   logic [9:0] obj_position_counter;
+	logic [10:0] game_time;
   always_ff @ (posedge game_clk, posedge reset) begin
 		if(reset) begin
-			counter_black <= 0;
-			game_time = 0;
+			obj_position_counter <= 0;
+			game_time <= 0;
+		end
+		// Reset level whenever user wins, loses, or goes to the menu screen.
+		else if(menuScreen == 1 | playerWon == 1 | playerLost == 1) begin
+			obj_position_counter <= 0;
+			game_time <= 0;
 		end
 		else begin
-			if(counter_black == 10'd695)
-				counter_black <= 10'd0;
+			if(obj_position_counter == 10'd695)
+				obj_position_counter <= 10'd0;
 			else
-				counter_black<= counter_black + 10;
-			if(game_time == 10'd1000) begin
+				obj_position_counter<= obj_position_counter + 10;
+				
+			// If player beats length of level user wins
+			if(game_time == 10'd200) begin
 				win <= 1;
 				dead <= 0;
 				game_time <= 0;
@@ -56,20 +63,29 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 			end
 		end
   end
-  triangle_generate o1(x, y, counter_black, obs[0]); 
-  triangle_generate o2(x, y, counter_black - 120, obs[1]); 
+  logic menu;
+  generateMenuScreen(x, y, obj_position_counter, menu);
+  triangle_generate o1(x, y, obj_position_counter, obs[0]); 
+  triangle_generate o2(x, y, obj_position_counter - 120, obs[1]); 
   movingBackground b1(x, y, 10'd850, 10'd360, 10'd680, 10'd400, game_clk, reset, mb1);
   sqGen ground(x, y, 10'd20, 10'd400, 10'd700, 10'd500, gnd); // level for player
   // left, top, right, bot
   // Display shapes
   always_ff @(posedge clk) begin		
-	/*if(player_right_loc == 10'd620 - counter_black) begin
+	if(player_right_loc == 10'd620 - obj_position_counter) begin
 		//dead <= 1;
 	end
 	if(menuScreen == 1) begin
-		r_red = 8'h00;
-		r_green = 8'h00;
-		r_blue = 8'h00;
+		if(menu) begin
+			r_red = 8'h00;
+			r_green = 8'h00;
+			r_blue = 8'hFF;
+		end
+		else begin
+			r_red = 8'h00;
+			r_green = 8'h00;
+			r_blue = 8'h00;
+		end
 	end
 	else if(playerWon == 1) begin
 		r_red = 8'h00;
@@ -77,7 +93,7 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 		r_blue = 8'h00;
 	end
 	else begin
-	*/	
+	
 	if(player) begin // player
 	   r_red = 8'hFF;
 		r_green = 8'h00;
@@ -122,24 +138,36 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 		r_blue = 8'h00;
 	 end
 	end
-  //end
+  end
   
   assign r = r_red;
   assign b = r_blue;
   assign g = r_green;
 
 endmodule
-
-module triangle_generate(input  logic [9:0] x, y, c,
-								 output logic       pixel); 
+module generateMenuScreen(input  logic [9:0] x, y, movingPosition,
+								 output logic       menu);
+  logic [1024:0] menuROM[2047:0]; // character generator ROM 
+  logic [1023:0] ROMline;            // a line read from the ROM 
+  
+  // initialize ROM with characters from text file 
+  initial $readmemb("menuText.txt", menuROM); 
+  // index into ROM 
+  assign ROMline = menuROM[y - 200];  
+  assign menu = ROMline[10'd1024 - x - 200]; 
+  
+endmodule
+// Create a triangle 30 x 30 pixels
+module triangle_generate(input  logic [9:0] x, y, movingPosition,
+								 output logic       triangle); 
   logic [1024:0] triROM[2047:0]; // character generator ROM 
-  logic [1023:0] line;            // a line read from the ROM 
+  logic [1023:0] ROMline;            // a line read from the ROM 
   
   // initialize ROM with characters from text file 
   initial $readmemb("triangle.txt", triROM); 
   // index into ROM 
-  assign line = triROM[y - 365];  
-  assign pixel = line[x + c - 680]; 
+  assign ROMline = triROM[y - 365];  
+  assign triangle = ROMline[x + movingPosition - 680]; 
   
 endmodule 
 
