@@ -40,11 +40,11 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 			game_time = 0;
 		end
 		else begin
-			if(counter_black == 10'd620)
+			if(counter_black == 10'd695)
 				counter_black <= 10'd0;
 			else
 				counter_black<= counter_black + 10;
-			if(game_time == 10'd100) begin
+			if(game_time == 10'd1000) begin
 				win <= 1;
 				dead <= 0;
 				game_time <= 0;
@@ -56,10 +56,8 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 			end
 		end
   end
-  sqGen black_square(x, y, 10'd650 - counter_black, 10'd360, 10'd680 - counter_black, 10'd400, obs[0]); 
-  sqGen black_square2(x, y, 10'd620- counter_black, 10'd360, 10'd650 - counter_black, 10'd400, obs[1]); 
-  //trigen tr(x, y, 10'd650, 10'd360, 10'd680, 10'd400, game_clk, reset, obs[2]); 
-   trigen tr(y[8:3], x[2:0], y[2:0], obs[2]); 
+  triangle_generate o1(x, y, counter_black, obs[0]); 
+  triangle_generate o2(x, y, counter_black - 120, obs[1]); 
   movingBackground b1(x, y, 10'd850, 10'd360, 10'd680, 10'd400, game_clk, reset, mb1);
   sqGen ground(x, y, 10'd20, 10'd400, 10'd700, 10'd500, gnd); // level for player
   // left, top, right, bot
@@ -132,45 +130,20 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 
 endmodule
 
-/*module trigen(input  logic [9:0] x, y, left, top, right, bot, 
-					input logic clk, reset,
-               output logic shape);
-  logic [9:0] c = 0;
+module triangle_generate(input  logic [9:0] x, y, c,
+								 output logic       pixel); 
+  logic [1024:0] triROM[2047:0]; // character generator ROM 
+  logic [1023:0] line;            // a line read from the ROM 
   
-  always_ff @(posedge clk, posedge reset) begin
-	if(reset)  
-		c = 0;
-	else if(c >= top) c <= 0;
-	else
-		c <= c + 1;
-		
-  end
-
-	assign shape = x > left & x < right & (y > c + bot) & y < top;//(x > left + changeShape & x < (right - changeShape) ) & (y > changeShape & (y < top));
-	
-
-endmodule 
-*/
-module trigen(input  logic [29:0] ch, 
-               input  logic [9:0] xoff, yoff,  
-               output logic       trian); 
-
-  logic [30:0] tria[2047:0]; // character generator ROM 
-  logic [29:0] line;            // a line read from the ROM 
-
   // initialize ROM with characters from text file 
-  initial $readmemb("triangle.txt", tria); 
-
-  // index into ROM to find line of character 
-  assign line = tria[yoff+{ch, 3'b000}];  // subtract 65 because A 
-                                                // is entry 0 
-  // reverse order of bits 
-  assign trian = line[3'd29-xoff]; 
+  initial $readmemb("triangle.txt", triROM); 
+  // index into ROM 
+  assign line = triROM[y - 365];  
+  assign pixel = line[x + c - 680]; 
   
 endmodule 
 
-
-
+// Moving obstacle logic
 module movingBackground(input  logic [9:0] x, y, left, top, right, bot, 
 					input logic clk, reset,
                output logic shape);
@@ -194,6 +167,7 @@ module movingBackground(input  logic [9:0] x, y, left, top, right, bot,
 
 endmodule 
 
+// Square logic
 module sqGen(input  logic [9:0] x, y, left, top, right, bot, 
                output logic shape);
   assign shape = (x > left & x < right &  y > top & y < bot); 
