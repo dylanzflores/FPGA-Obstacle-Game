@@ -51,8 +51,8 @@ endmodule
   assign player_bottom_loc = 10'd400 - distance;
   generateMenuScreen(x, y, obj_position_counter, menu); // menu screen
   sqGen mainSq(x, y, 10'd220, base_lvl - distance, player_right_loc, player_bottom_loc, player); // main player square character
-  triangle_generate o1(x, y, obj_position_counter, obs[0]); 
-  triangle_generate o2(x, y, obj_position_counter - 120, obs[1]); 
+  triangle_generate o1(x, y, obj_position_counter, 1, obs[0]); 
+  triangle_generate o2(x, y, obj_position_counter - 120, 1, obs[1]); 
   movingBackground b1(x, y, 10'd850, base_lvl, spawn_loc, 10'd400, game_clk, reset, mb1);
   sqGen ground1(x, y, 10'd20, 10'd400, 10'd700, 10'd500, ground); // level for player
   
@@ -145,7 +145,7 @@ module generateMenuScreen(input  logic [9:0] x, y, movingPosition,
   assign menu = ROMline[10'd1024 - x - 200]; 
   
 endmodule
-module triangle_generate #(parameter spawn_loc = 360, parameter triangle_spawn_base_lvl = 375)
+module triangle_generate #(parameter spawn_loc = 680, parameter triangle_spawn_base_lvl = 375)
 									(input  logic [9:0] x, y, movingPosition, make_triangle,
 									 output logic       triangle,
 									 output logic [9:0] obstacle_pos); 
@@ -156,25 +156,12 @@ module triangle_generate #(parameter spawn_loc = 360, parameter triangle_spawn_b
 		// initialize ROM with characters from text file 
 		initial $readmemb("triangle.txt", triROM); 
 		// index into ROM 
-		assign obstacle_pos = x + movingPosition;
+		assign obstacle_pos = x + movingPosition - spawn_loc;
 		assign ROMline = triROM[y - triangle_spawn_base_lvl];  
-		assign triangle = ROMline[obstacle_pos - spawn_loc]; 
+		assign triangle = make_triangle ? ROMline[obstacle_pos] : 0; 
 	
 	endmodule 
-/*// Create a triangle 30 x 30 pixels
-module triangle_generate(input  logic [9:0] x, y, movingPosition,
-								 output logic       triangle); 
-  logic [1024:0] triROM[2047:0]; // character generator ROM 
-  logic [1023:0] ROMline;            // a line read from the ROM 
-  
-  // initialize ROM with characters from text file 
-  initial $readmemb("triangle.txt", triROM); 
-  // index into ROM 
-  assign ROMline = triROM[y - 365];  
-  assign triangle = ROMline[x + movingPosition - 680]; 
-  
-endmodule 
-*/
+	
 // Moving obstacle logic
 module movingBackground(input  logic [9:0] x, y, left, top, right, bot, 
 					input logic clk, reset,

@@ -1,6 +1,6 @@
 	module counter_shapes(input logic clk, reset, menuScreen, playerWon, playerLost,
-						  output logic [10:0] obj_position_counter, game_time,
-						  output logic win);
+						  output logic [10:0] obj_position_counter, game_time);
+						  
 	always_ff @ (posedge clk, posedge reset) begin
 		if(reset) begin
 			obj_position_counter <= 0;
@@ -19,13 +19,11 @@
 						
 					// If player beats length of level user wins
 					if(game_time == 10'd200) begin
-						win <= 1;
 						//dead <= 0;
 						game_time <= 0;
 					end
-					else if(win == 1) win <= 0;
+					//else if(win == 1) win <= 0;
 					else begin
-						win <= 0;
 						game_time <= game_time + 1;
 					end
 				end

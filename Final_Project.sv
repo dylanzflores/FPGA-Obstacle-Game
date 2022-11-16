@@ -10,11 +10,13 @@ module Final_Project(input logic CLOCK_50, SW[1:0], KEY[0],
   // SW[0] = reset, SW[1] = switch clockspeed enable, KEY[0] = player control to jump						
  logic game_clk, jump;
  logic victoryScreen, loseScreen, menuScreen, playerDeath, win;
- logic [9:0] distance = 0;
+ logic [9:0] distance, obj_position_counter;
  jump_logic j(game_clk, SW[0], ~KEY[0], distance);
+ logic shapes[30:0];
  
+ counter_shapes c1(game_clk, reset, menuScreen, playerWon, playerLost, obj_position_counter, game_time);
  gameLogic fsm1(CLOCK_50, SW[0], ~KEY[0], win, playerDeath, victoryScreen, loseScreen, menuScreen); // game FSM
  slowClkHz hz24 (CLOCK_50, SW[0], game_clk);
- vga vgaDev(CLOCK_50, game_clk, SW[0], loseScreen, victoryScreen, menuScreen, distance, win, playerDeath, VGA_CLK, VGA_HS, VGA_VS, VGA_SYNC_N, VGA_BLANK_N,
+ vga vgaDev(CLOCK_50, game_clk, SW[0], loseScreen, victoryScreen, menuScreen, shapes[30:0], distance, obj_position_counter, win, playerDeath, VGA_CLK, VGA_HS, VGA_VS, VGA_SYNC_N, VGA_BLANK_N,
 			 VGA_R, VGA_G, VGA_B);   
 endmodule
