@@ -1,10 +1,11 @@
-module vga(input  logic clk, game_clk, reset, playerLost, playerWon, menuScreen,
-			  input logic [9:0] distance,
-			  output logic win, dead,
-           output logic vgaclk,          // 25.175 MHz VGA clock 
-           output logic hsync, vsync, 
-           output logic sync_b, blank_b, // to monitor & DAC 
-           output logic [7:0] r, g, b);  // to video DAC 
+	module vga(input  logic clk, game_clk, reset, playerLost, playerWon, menuScreen,
+				  input logic  shapes[30:0],
+				  input  logic [9:0] distance, obj_counter,
+				  output logic win, dead, 
+				  output logic vgaclk,          // 25.175 MHz VGA clock 
+				  output logic hsync, vsync, 
+				  output logic sync_b, blank_b, // to monitor & DAC 
+				  output logic [7:0] r, g, b);  // to video DAC 
 			  
   logic [9:0] x, y; 
   always_ff @(posedge clk, posedge reset)
@@ -17,64 +18,54 @@ module vga(input  logic clk, game_clk, reset, playerLost, playerWon, menuScreen,
   vgaController vgaCont(vgaclk, reset, hsync, vsync, sync_b, blank_b, x, y); 
 
   // user-defined module to determine pixel color 
-  videoGen videoGen1(x, y, clk, distance, reset, game_clk, playerLost, playerWon, menuScreen, r, g, b, win, dead); 
+	videoGen videoGen1(x, y, vgaclk, distance, obj_counter, reset, game_clk, playerLost, playerWon, menuScreen, shapes, r, g, b, win, dead); 
 
 endmodule 
 
-module videoGen(input logic [9:0] x, y, clk, distance,
-					 input logic reset, game_clk, playerLost, playerWon, menuScreen,
-					 output logic [7:0] r, g, b,
-					 output logic win, dead); 
-
-  logic obs[10:0], player, gnd, mb1; 						//Top Left Top Edge  Top Right Bottom Edg
+// Module detecting whenever the player hits an obstacle that triggers a death
+	module collisions_tri(input logic [9:0] player_right, player_bot, tria_left, tria_top,
+								 output logic hit);
+	  parameter delay = 5;
+	  always_comb begin
+		if( (player_right + delay) == tria_left) hit = 1; // if player hits left side of triangle trigger hit  
+		else if(player_bot + delay == tria_top) hit = 1; // else if player hits top of triangle trigger hit
+		else hit = 0; // hit not triggered
+	  end
+	endmodule
+	
+	module videoGen(input  logic [9:0] x, y, clk, distance, obj_position_counter,
+						input  logic reset, game_clk, playerLost, playerWon, menuScreen,
+						input logic shapes [30:0],
+						output logic [7:0] r, g, b,
+						output logic win, dead); 
+	parameter spawn_loc = 680;
+	parameter base_lvl = 360;
+	
+  logic obs[10:0], player, ground, mb1; 	
+  logic menu, hit;
+  //Top Left Top Edge  Top Right Bottom Edg
   logic [9:0] player_right_loc, player_bottom_loc;
-  logic [7:0] r_red, r_blue, r_green;
+  //logic [9:0] obj_position_counter;
+  logic [10:0] game_time;
   assign player_right_loc = 10'd250;
   assign player_bottom_loc = 10'd400 - distance;
-   sqGen mainSq(x, y, 10'd220, 10'd360 - distance, player_right_loc, player_bottom_loc, player); // main player square character
-   logic [9:0] obj_position_counter;
-	logic [10:0] game_time;
-  always_ff @ (posedge game_clk, posedge reset) begin
-		if(reset) begin
-			obj_position_counter <= 0;
-			game_time <= 0;
-		end
-		// Reset level whenever user wins, loses, or goes to the menu screen.
-		else if(menuScreen == 1 | playerWon == 1 | playerLost == 1) begin
-			obj_position_counter <= 0;
-			game_time <= 0;
-		end
-		else begin
-			if(obj_position_counter == 10'd695)
-				obj_position_counter <= 10'd0;
-			else
-				obj_position_counter<= obj_position_counter + 10;
-				
-			// If player beats length of level user wins
-			if(game_time == 10'd200) begin
-				win <= 1;
-				dead <= 0;
-				game_time <= 0;
-			end
-			else if(win == 1) win <= 0;
-			else begin
-				win <= 0;
-				game_time <= game_time + 1;
-			end
-		end
-  end
-  logic menu;
-  generateMenuScreen(x, y, obj_position_counter, menu);
+  generateMenuScreen(x, y, obj_position_counter, menu); // menu screen
+  sqGen mainSq(x, y, 10'd220, base_lvl - distance, player_right_loc, player_bottom_loc, player); // main player square character
   triangle_generate o1(x, y, obj_position_counter, obs[0]); 
   triangle_generate o2(x, y, obj_position_counter - 120, obs[1]); 
-  movingBackground b1(x, y, 10'd850, 10'd360, 10'd680, 10'd400, game_clk, reset, mb1);
-  sqGen ground(x, y, 10'd20, 10'd400, 10'd700, 10'd500, gnd); // level for player
-  // left, top, right, bot
+  movingBackground b1(x, y, 10'd850, base_lvl, spawn_loc, 10'd400, game_clk, reset, mb1);
+  sqGen ground1(x, y, 10'd20, 10'd400, 10'd700, 10'd500, ground); // level for player
+  
   // Display shapes
+  display_to_vga_screen(clk, reset, menu, menuScreen, playerWon, playerLost, player, ground, mb1, obs[10:0], r, g, b);
+
+endmodule
+
+module display_to_vga_screen(input logic clk, reset, 
+										  input logic menu, menuScreen, playerWon, playerLost, 
+										  input logic player, ground, mb1, obs[10:0],
+										  output logic [7:0] r_red, r_green, r_blue);
   always_ff @(posedge clk) begin		
-	if(player_right_loc == 10'd620 - obj_position_counter) begin
-		//dead <= 1;
-	end
 	if(menuScreen == 1) begin
 		if(menu) begin
 			r_red = 8'h00;
@@ -132,19 +123,16 @@ module videoGen(input logic [9:0] x, y, clk, distance,
 		r_green = 8'h13;
 		r_blue = 8'h81;
 	end
-	 else if(gnd) begin
+	 else if(ground) begin
 		r_red = 8'h00;
 		r_green = 8'h00;
 		r_blue = 8'h00;
 	 end
 	end
   end
-  
-  assign r = r_red;
-  assign b = r_blue;
-  assign g = r_green;
-
-endmodule
+  									  
+										  
+endmodule										  
 module generateMenuScreen(input  logic [9:0] x, y, movingPosition,
 								 output logic       menu);
   logic [1024:0] menuROM[2047:0]; // character generator ROM 
@@ -157,7 +145,23 @@ module generateMenuScreen(input  logic [9:0] x, y, movingPosition,
   assign menu = ROMline[10'd1024 - x - 200]; 
   
 endmodule
-// Create a triangle 30 x 30 pixels
+module triangle_generate #(parameter spawn_loc = 360, parameter triangle_spawn_base_lvl = 375)
+									(input  logic [9:0] x, y, movingPosition, make_triangle,
+									 output logic       triangle,
+									 output logic [9:0] obstacle_pos); 
+									 
+		logic [1024:0] triROM[2047:0]; // character generator ROM 
+		logic [1023:0] ROMline;            // a line read from the ROM 
+		
+		// initialize ROM with characters from text file 
+		initial $readmemb("triangle.txt", triROM); 
+		// index into ROM 
+		assign obstacle_pos = x + movingPosition;
+		assign ROMline = triROM[y - triangle_spawn_base_lvl];  
+		assign triangle = ROMline[obstacle_pos - spawn_loc]; 
+	
+	endmodule 
+/*// Create a triangle 30 x 30 pixels
 module triangle_generate(input  logic [9:0] x, y, movingPosition,
 								 output logic       triangle); 
   logic [1024:0] triROM[2047:0]; // character generator ROM 
@@ -170,7 +174,7 @@ module triangle_generate(input  logic [9:0] x, y, movingPosition,
   assign triangle = ROMline[x + movingPosition - 680]; 
   
 endmodule 
-
+*/
 // Moving obstacle logic
 module movingBackground(input  logic [9:0] x, y, left, top, right, bot, 
 					input logic clk, reset,

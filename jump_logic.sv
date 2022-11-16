@@ -1,8 +1,8 @@
 module jump_logic(input  logic clk, reset, en,
 				output logic [9:0] out);
   logic stop;
-  jumpDelay(clk, reset, enCount, out, stop);
-  jumpFSM(clk, reset, en, stop, enCount);
+  jumpDelay j(clk, reset, enCount, out, stop);
+  jumpFSM jf(clk, reset, en, stop, enCount);
 	  
 endmodule
 
