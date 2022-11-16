@@ -30,7 +30,7 @@ module gameLogic(input logic clk, reset, userSel, win, dead,
 			else ns = S2;
 		  end
 	  S3: ns = S0; 
-	  default: ns = ns;
+	  default: ns = S0;
 	endcase
 	
 	assign menuScreen = (state == S0);

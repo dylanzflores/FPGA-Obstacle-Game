@@ -51,10 +51,13 @@ endmodule
   assign player_bottom_loc = 10'd400 - distance;
   generateMenuScreen(x, y, obj_position_counter, menu); // menu screen
   sqGen mainSq(x, y, 10'd220, base_lvl - distance, player_right_loc, player_bottom_loc, player); // main player square character
-  triangle_generate o1(x, y, obj_position_counter, 1, obs[0]); 
-  triangle_generate o2(x, y, obj_position_counter - 120, 1, obs[1]); 
-  movingBackground b1(x, y, 10'd850, base_lvl, spawn_loc, 10'd400, game_clk, reset, mb1);
   sqGen ground1(x, y, 10'd20, 10'd400, 10'd700, 10'd500, ground); // level for player
+  
+  triangle_generate o1(x, y, obj_position_counter, shapes[0], obs[0]); 
+  triangle_generate o2(x, y, obj_position_counter, shapes[1], obs[1]); 
+  triangle_generate o3(x, y, obj_position_counter - 120, shapes[1], obs[2]); 
+
+  movingBackground b1(x, y, 10'd850, base_lvl, spawn_loc, 10'd400, game_clk, reset, mb1);
   
   // Display shapes
   display_to_vga_screen(clk, reset, menu, menuScreen, playerWon, playerLost, player, ground, mb1, obs[10:0], r, g, b);
@@ -109,19 +112,24 @@ module display_to_vga_screen(input logic clk, reset,
 	end
 	
 	else if(obs[0]) begin // obstacle 1
-		r_red = 8'h00;
+		r_red = 8'hFF;
 		r_green = 8'h00;
 		r_blue = 8'h00;
 	 end
 	 else if(obs[1]) begin // obstacle 2
-		r_red = 8'hFF;
+		r_red = 8'h0F;
 		r_green = 8'hFF;
-		r_blue = 8'hFF;
+		r_blue = 8'h40;
 	 end
 	 else if(obs[2]) begin
 		r_red = 8'h0A;
 		r_green = 8'h13;
 		r_blue = 8'h81;
+	end
+	 else if(obs[3]) begin
+		r_red = 8'hFF;
+		r_green = 8'h00;
+		r_blue = 8'h43;
 	end
 	 else if(ground) begin
 		r_red = 8'h00;
@@ -135,7 +143,7 @@ module display_to_vga_screen(input logic clk, reset,
 endmodule										  
 module generateMenuScreen(input  logic [9:0] x, y, movingPosition,
 								 output logic       menu);
-  logic [1024:0] menuROM[2047:0]; // character generator ROM 
+  logic [1024:0] menuROM[1023:0]; // character generator ROM 
   logic [1023:0] ROMline;            // a line read from the ROM 
   
   // initialize ROM with characters from text file 
@@ -146,12 +154,13 @@ module generateMenuScreen(input  logic [9:0] x, y, movingPosition,
   
 endmodule
 module triangle_generate #(parameter spawn_loc = 680, parameter triangle_spawn_base_lvl = 375)
-									(input  logic [9:0] x, y, movingPosition, make_triangle,
+									(input  logic [9:0] x, y, movingPosition, 
+									 input  logic 		  make_triangle,
 									 output logic       triangle,
 									 output logic [9:0] obstacle_pos); 
 									 
-		logic [1024:0] triROM[2047:0]; // character generator ROM 
-		logic [1023:0] ROMline;            // a line read from the ROM 
+		logic [750:0] triROM[750:0]; // character generator ROM 
+		logic [750:0] ROMline;            // a line read from the ROM 
 		
 		// initialize ROM with characters from text file 
 		initial $readmemb("triangle.txt", triROM); 
