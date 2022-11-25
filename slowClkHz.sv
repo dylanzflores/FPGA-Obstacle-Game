@@ -5,7 +5,7 @@
 	
 	always_ff @ (posedge clk) begin
 		if(reset) cnt <= 24'd0;
-		else cnt <= cnt + 24'd8;
+		else cnt <= cnt + 24'd12; // 12
 		
 	end
 	

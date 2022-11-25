@@ -18,20 +18,20 @@
 		end
 		else if(enCount == 1 & ~reset) begin
 				if(done == 0) begin
-					out <= out + 10;
+					out <= out + 15;
 					stop <= 0;
-					if(out == 100) done = 1;
+					if(out == 90) done = 1;
 					else done = 0;
 				end
 				else if(done == 1) begin
-					out <= out - 10;
+					out <= out - 15;
 					if(out == 0) begin
-						stop = 1;
-						done = 0;
+						stop <= 1;
+						done <= 0;
 					end
 					else begin
-						stop = 0;
-						done = 1;
+						stop <= 0;
+						done <= 1;
 					end
 				end
 			end
