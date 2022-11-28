@@ -1,6 +1,6 @@
-	module counter_shapes(input logic clk, reset, menuScreen, playerWon, playerLost,
+	module counter_shapes(input logic clk, reset, menuScreen, playerWon, playerLost, reset_obj_count,
 						  output logic [9:0] obj_position_counter, 
-						  output logic [1023:0] game_time,
+						  output logic [15:0] game_time,
 						  output logic levelDone);
 						  
 		always_ff @ (posedge clk, posedge reset) begin
@@ -14,8 +14,8 @@
 				game_time <= 0;
 			end
 			else begin
-				if(obj_position_counter == 10'd695) obj_position_counter <= 10'd0;
-				else obj_position_counter <= obj_position_counter + 10;
+				if(obj_position_counter >= 10'd680 | reset_obj_count) obj_position_counter <= 10'd0;
+				else obj_position_counter <= obj_position_counter + 5;
 					game_time <= game_time + 1;
 			end
 		end
