@@ -270,50 +270,58 @@
 			end
 			// Display the win screen showing that the user won.
 			else if(playerWon == 1) begin
-				if(win) begin
-					r_red = 8'hFF;
-					r_green = 8'hFF;
-					r_blue = 8'hFF;
-				end
-				// Ground displayed
-				else if(ground) begin
-					r_red = 8'hFF;
-					r_green = 8'hFF;
-					r_blue = 8'hFF;
-				end
-				// Background level
-				else begin
-					r_red = 8'h25;
-					r_green = 8'hAA;
-					r_blue = 8'hAD;
-				end
+			  if(win) begin
+			    r_red = 8'hFF;
+			    r_green = 8'hFF;
+				 r_blue = 8'hFF;
+			  end
+			  // Player graphics
+			  else if(player) begin	
+			    r_red = 8'hFF;
+			    r_green = 8'h00;
+			    r_blue = 8'h00;
+			  end
+			  // Ground displayed
+			  else if(ground) begin
+			    r_red = 8'hFF;
+			    r_green = 8'hFF;
+			    r_blue = 8'hFF;
+			  end
+			  // Background level
+			  else begin
+			    r_red = 8'h25;
+				 r_green = 8'hAA;
+				 r_blue = 8'hAD;
+			  end
 			end
 			else begin
-				if(player & playerLost == 0) begin // player	
-						r_red = 8'hFF;
-						r_green = 8'h00;
-						r_blue = 8'h00;
-				end
-				else if(!player) begin // background
-					r_red = 8'h25;
-					r_green = 8'hAA;
-					r_blue = 8'hAD;
-				end
-				else begin // float values of red, green, blue
-					r_red = 8'hzz;
-					r_green = 8'hzz;
-					r_blue = 8'hzz;
-				end
-				if(display_obstacles) begin // obstacle 1
-					r_red = 8'h00;
-					r_green = 8'h00;
-					r_blue = 8'h00;
-				end
-				else if(ground) begin
-					r_red = 8'hFF;
-					r_green = 8'hFF;
-					r_blue = 8'hFF;
-				end
+			  // Player graphics
+			  if(player & playerLost == 0) begin
+			    r_red = 8'hFF;
+			    r_green = 8'h00;
+			    r_blue = 8'h00;
+			  end
+			  else if(!player) begin // background
+			    r_red = 8'h25;
+			    r_green = 8'hAA;
+			    r_blue = 8'hAD;
+			  end
+			  else begin // float values of red, green, blue
+			    r_red = 8'hzz;
+			    r_green = 8'hzz;
+			    r_blue = 8'hzz;
+			  end
+			  if(display_obstacles) begin // obstacle 1
+			    r_red = 8'h00;
+			    r_green = 8'h00;
+			    r_blue = 8'h00;
+			  end
+			  // Ground displayed
+			  else if(ground) begin
+			    r_red = 8'hFF;
+			    r_green = 8'hFF;
+			    r_blue = 8'hFF;
+			  end
 			end
 		end																			
 	endmodule	
