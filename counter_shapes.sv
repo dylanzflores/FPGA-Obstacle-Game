@@ -1,6 +1,6 @@
 	module counter_shapes(input logic clk, reset, menuScreen, playerWon, playerLost, reset_obj_count,
 						  output logic [9:0] obj_position_counter, 
-						  output logic [15:0] game_time,
+						  output logic [10:0] game_time,
 						  output logic levelDone);
 						  
 		always_ff @ (posedge clk, posedge reset) begin
