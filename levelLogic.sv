@@ -1,9 +1,8 @@
-  module levelLogic(input logic clk, reset, playerDied, userSel,
+  module levelLogic(input logic clk, reset, playerDied, userSel, slowClk,
 						  input logic [10:0] game_time, 
 						  output logic reset_obj_count, playerDone,
 						  output logic shapes[6:0],
 						  output logic winScreen, menuScreen);
-	
     typedef enum logic [4:0] {menu, menuDelay, S0, S1, S2, S3, S4, S5, S6, fallingSq, pWDelay, playerWins} statetype;
 	 statetype state, ns;
 	 always_ff @ (posedge clk, posedge reset) begin
@@ -90,3 +89,4 @@
 
   endmodule
 	
+  
