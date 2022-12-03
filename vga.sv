@@ -52,7 +52,7 @@
 	 assign player_bottom_loc = 10'd400 - distance;
 	 
 	 generateMenuScreen m(x, y, obj_position_counter, menu); // menu screen
-	 generateWinScreen(x, y, movingPosition, win); // win screen
+	 generateWinScreen w(x, y, movingPosition, win); // win screen
 	 sqGen mainSq(x, y, player_left_loc, player_top_loc, player_right_loc, player_bottom_loc, player); // main player square character
 	 sqGen ground1(x, y, 10'd0, 10'd400, 10'd700, 10'd405, ground); // level for player		  
 	 // ************************************************************************************************************************//	
