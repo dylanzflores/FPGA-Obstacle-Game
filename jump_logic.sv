@@ -1,41 +1,46 @@
 	// Top module for the jump logic of the player
 	module jump_logic(input  logic clk, reset, en, fallingSq,
-							output logic [9:0] out);
+					  output logic [9:0] out);
+		// Top module for the jump logic of the player
 		logic stop;
-		jumpDelay j(clk, reset, enCount, fallingSq, out, stop);
-		jumpFSM jf(clk, reset, en, stop, enCount);
-		
+		jumpDelay jD(clk, reset, enCount, fallingSq, out, stop);
+		jumpFSM jFSM(clk, reset, en, stop, enCount);	
 	endmodule
 
   // Logic for the player to jump then jump back down.	
-  module jumpDelay(input logic clk, reset, enCount, fallingSq,
-						output logic [9:0] out,
-						output logic stop);
+  module jumpDelay(input  logic clk, reset, enCount, fallingSq,
+				   output logic [9:0] out,
+				   output logic stop);
 	logic done;
+	// Covers how far the player jumps up and brings the player down upon each button press.
 	always_ff @ (posedge clk, posedge reset) begin
+	    // Resets the player's jumping.
 		if(reset) begin
 			out <= 10'd0;
 			stop <= 1'b0;
 		end
+		// Square will fall as a decoration for winning the game.
 		else if(fallingSq) begin
-			out <= out - 20;
+			out <= out - 10'd20;
 		end
+		// Player jump up logic
 		else if(enCount == 1 & ~reset) begin
 			if(done == 0) begin
-				out <= out + 7;
-				stop <= 0;
-				if(out == 112) done = 1;
-				else done = 0;
+				out <= out + 10'd7;
+				stop <= 1'b0;
+				if(out == 10'd112) done = 1'b1;
+				else done = 1'b0;
 			end
-			else if(done == 1) begin
-				out <= out - 7;
-				if(out == 0) begin
-					stop <= 1;
-					done <= 0;
+			// Stops the square from jumping too high up upon each press.
+			else if(done == 1'b1) begin
+				out <= out - 10'd7;
+				if(out == 10'd0) begin
+					stop <= 1'b1;
+					done <= 1'b0;
 				end
 				else begin
-					stop <= 0;
-					done <= 1;
+					stop <= 1'b0;
+					done <= 1'b1;
 				end
 			end
 		end
@@ -44,8 +49,8 @@
   endmodule
   
   // Logic for the user's jump
-  module jumpFSM(input logic clk, reset, en, stop,
-					  output logic enCount);
+  module jumpFSM(input  logic clk, reset, en, stop,
+				 output logic enCount);
 	
     typedef enum logic {S0, S1} statetype; 
     statetype state, ns;

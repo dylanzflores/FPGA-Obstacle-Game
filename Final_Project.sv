@@ -10,28 +10,28 @@ module Final_Project(input logic 		 CLOCK_50, SW[0:0], KEY[0:0],
                      output logic [7:0] VGA_B,
 							output logic [6:0] HEX0, HEX1,
 							output logic [8:0] LEDG);
-        // SW[0] = reset, KEY[0] = player control to jump                        
-        logic game_clk, jump, reset_obj_count, fallingSq;
-        logic victoryScreen, menuScreen, playerDeath;
-        logic [9:0] distance;
-        logic [9:0] obj_position_counter;
-        logic [10:0] game_time;
-        logic shapes[6:0];
-		  logic [3:0] bcd1, bcd2;
-		  logic cout1;
-		  
-        assign GPIO[1] = GPIO[0];
-        assign GPIO[2] = GPIO[0];
-        // Module instantiations
-        levelLogic lm(CLOCK_50, SW[0], playerDeath, ~KEY[0], game_clk, game_time, reset_obj_count, fallingSq, shapes, victoryScreen, menuScreen);
-        counter_shapes c1(game_clk, reset, menuScreen, victoryScreen, playerDeath, reset_obj_count, obj_position_counter, game_time);
-        slowClkHz hz24 (CLOCK_50, SW[0], game_clk);
-        jump_logic j(game_clk, SW[0], ~KEY[0], fallingSq, distance);
-        vga vgaDev(CLOCK_50, game_clk, SW[0], victoryScreen, menuScreen, shapes, distance, obj_position_counter, playerDeath, GPIO[4], VGA_CLK, VGA_HS, VGA_VS, VGA_SYNC_N, VGA_BLANK_N,
+      // SW[0] = reset, KEY[0] = player control to jump                        
+      logic game_clk, jump, reset_obj_count, fallingSq;
+      logic victoryScreen, menuScreen, playerDeath;
+      logic [9:0] distance;
+      logic [9:0] obj_position_counter;
+      logic [10:0] game_time;
+      logic shapes[6:0];
+		logic [3:0] bcd1, bcd2;
+		logic cout1;
+	 
+      assign GPIO[1] = GPIO[0];
+      assign GPIO[2] = GPIO[0];
+      // Module instantiations
+      levelLogic lm(CLOCK_50, SW[0], playerDeath, ~KEY[0], game_clk, game_time, reset_obj_count, fallingSq, shapes, victoryScreen, menuScreen);
+      counter_shapes c1(game_clk, reset, menuScreen, victoryScreen, playerDeath, reset_obj_count, obj_position_counter, game_time);
+      slowClkHz hz24 (CLOCK_50, SW[0], game_clk);
+      jump_logic j(game_clk, SW[0], ~KEY[0], fallingSq, distance);
+      vga vgaDev(CLOCK_50, game_clk, SW[0], victoryScreen, menuScreen, shapes, distance, obj_position_counter, playerDeath, GPIO[4], VGA_CLK, VGA_HS, VGA_VS, VGA_SYNC_N, VGA_BLANK_N,
                     VGA_R, VGA_G, VGA_B);
 		// Number of attempts set
 		bcdcounter1 d1 (game_clk, SW[0], playerDeath, victoryScreen, cout1, bcd1);
-	    bcdcounter2 d2 (game_clk, SW[0], playerDeath, victoryScreen, cout1, LEDG[8], bcd2);			  
+	   bcdcounter2 d2 (game_clk, SW[0], playerDeath, cout1, victoryScreen, LEDG[8], bcd2);			  
 		sevenseg seg0 (bcd1, HEX0);
 		sevenseg seg1 (bcd2, HEX1);
 
@@ -88,11 +88,11 @@ module Final_Project(input logic 		 CLOCK_50, SW[0:0], KEY[0:0],
 		else if(win) cnt2 = 0;
       else if(cnt2 == 9 & en == 1 & cin == 1) begin
 		  cnt2 = 0;
-		  cout = 0;
+		  cout = 1;
 		end
 		else if(cnt2 == 8 & en == 1 & cin == 1) begin
         cnt2 <= cnt2 + 1;
-        cout = 1;
+        cout = 0;
       end
       else if(cin == 1 & en == 1) begin
 		  cnt2 <= cnt2 + 1;
